@@ -1,0 +1,50 @@
+#!/bin/bash
+
+declare -A BJ_DEFAULT
+declare -A BJ_LIB
+declare -A BJ_SCRIPTS
+
+# [ NOTE ]: Absolute directory path the current file is in.
+BJ_DIRECTORY="$(
+    cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd
+)"
+CONF_FILE_PATH="$BJ_DIRECTORY/conf/bad-jokes-ahoy.conf"
+
+if [ ! -f "$CONF_FILE_PATH" ]; then
+    echo "[ WARNING ]: (BadJokes) Config file ($CONF_FILE_PATH) not found."
+    return 1
+else
+    source "$CONF_FILE_PATH"
+fi
+
+for script in ${!BJ_SCRIPTS[@]}; do
+    source ${BJ_SCRIPTS[$script]}
+    if [ $? -ne 0 ]; then
+        echo "[ NOK ]: (BadJokes) Something went wrong."\
+            "Could not load ($script) script."
+    else
+        echo "[ OK ]: (BadJokes) Successfully loaded ($script) script."
+    fi
+done
+
+for library in ${!BJ_LIB[@]}; do
+    source ${BJ_LIB[$library]}
+    if [ $? -ne 0 ]; then
+        echo "[ NOK ]: (BadJokes) Something went wrong."\
+            "Could not load ($library) library."
+    else
+        echo "[ OK ]: (BadJokes) Successfully loaded ($library) library."
+    fi
+done
+
+# MISCELLANEOUS
+
+function bj_init () {
+    echo -n 'Remembering bad jokes'; three_second_delay
+#   display_banner
+    bj_project_setup
+    display_banner
+    init_menu 'MainController'
+}
+
+bj_init
